@@ -17,6 +17,7 @@ WriteMakefile(
     # Dear CPAN Testers, please keep me honest here:
     MIN_PERL_VERSION => '5.8.1',
     TEST_REQUIRES => {
+        'IO::Pty'          => 0,
         'Test::Fatal'      => 0,
         'Test::More'       => 0,
         'Test::Warnings'   => 0,

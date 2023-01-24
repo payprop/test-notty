@@ -7,6 +7,7 @@ use Test::More qw(no_plan);
 use Test::Warnings;
 use Test::Fatal;
 use Config;
+require IO::Pty;
 
 BEGIN {
     use_ok('Test::NoTty');
@@ -23,14 +24,28 @@ my $dev_tty = '/dev/tty';
 BAIL_OUT("$dev_tty is now missing - Makefile.PL should have checked for this")
     unless -e $dev_tty;
 
+my $pty;
 if (open my $tty, '+<', $dev_tty) {
     # That would be *bad*:
     close $tty
         or die "Failed to *close* $dev_tty: $!";
 } else {
-    note("Can't open TTY - can't test (yet)");
-    done_testing;
-    exit 0;
+    # We don't *have* a controling terminal, so we need to create one just so
+    # that we can test getting rid of it :-)
+    note("Using IO::Pty to create a controlling terminal...");
+    $pty = IO::Pty->new;
+    # This is still the term Open Group are using for this end:
+    $pty->make_slave_controlling_terminal();
+
+    if (open my $tty, '+<', $dev_tty) {
+        note("Our pseudo-terminal is now our controlling terminal \\o/");
+        # That would be *bad*:
+        close $tty
+            or die "Failed to *close* our pseudo-tty: $!";
+    } else {
+        die "Failed to attach our pseudo-tty as $dev_tty";
+    }
+    # We now return you to your regularly scheduled programming...
 }
 
 my $have = without_tty {
@@ -123,5 +138,12 @@ SKIP: {
 # interactive test (rather than the forked child detaching and continuing
 # despite the parent exiting and the shell prompt appearing)
 # Not to do anything more reliable than that.
+
+if ($pty) {
+    local $SIG{HUP} = sub {
+        note("Got a HUP when closing my controlling terminal - this is expected");
+    };
+    my $got = $pty->close;
+}
 
 done_testing;
