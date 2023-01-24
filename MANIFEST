@@ -1,0 +1,7 @@
+Changes
+CONTRIBUTING.md
+MANIFEST
+Makefile.PL
+README
+lib/Test/NoTty.pm
+t/task-failed-successfully.t
