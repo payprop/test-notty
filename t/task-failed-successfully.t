@@ -101,6 +101,19 @@ like(exception(sub {
     fail("The code above should have died, hence this line should not execute");
 }), qr/\ASome::Class=ARRAY\(0x/);
 
+is(exception(sub {
+    is(without_tty(sub {
+        my $have = eval {
+            die "This should be trapped";
+            1;
+        };
+        return 1
+            if defined $have;
+        return $@ =~ qr/\AThis should be trapped at/ ? 3 : 2;
+    }), 3, 'eval should "work" in the tested code');
+}), undef, 'eval in the tested code should not leak the exception');
+
+
 my $sig = 'INT';
 my $sig_num;
 my $i = 0;

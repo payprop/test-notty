@@ -44,25 +44,27 @@ sub without_tty(&@) {
         # We use the pipe to send (and rethrow) any regular exception.
         # By implication, we can't deal with exception objects.
         close $reader;
-        local $SIG{__DIE__} = sub {
-            print $writer @_
-                or warn "print to error message handle failed: $!";
-            close $writer
-                or warn "close error message handle failed: $!";
+
+        eval {
+            die "setsid failed: $!"
+                unless setsid;
+
+            # Likewise, a limitation is that the only function return value we
+            # can easily support is an integer process exit code:
+            my $exitcode = $code->(@args);
             STDOUT->flush;
             STDERR->flush;
-            kill 'ABRT', $$;
+            _exit($exitcode // 0);
         };
 
-        die "setsid failed: $!"
-            unless setsid;
-
-        # Likewise, a limitation is that the only function return value we can
-        # easily support is an integer process exit code:
-        my $exitcode = $code->(@args);
+        # If you get here it's an error:
+        print $writer $@
+            or warn "print to error message handle failed: $!";
+        close $writer
+            or warn "close error message handle failed: $!";
         STDOUT->flush;
         STDERR->flush;
-        _exit($exitcode // 0);
+        kill 'ABRT', $$;
     }
     # We are in the parent
 
