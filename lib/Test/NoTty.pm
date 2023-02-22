@@ -131,8 +131,9 @@ cron jobs, or just CPAN testers? F</dev/tty> still exists, but opening it will
 fail. Your tests need to cover this case. But how do you test your tests as you
 write them, when you're running them in a terminal session?
 
-That's the purpose of this module. With it you can interactively run code
-without a controlling terminal, to test those code paths.
+That's the purpose of this module. It encapsulates the complex setup dance
+with C<fork>, C<setsid> I<etc>, to locally drop the controlling terminal, so
+that you can interactively run code to test those code paths.
 
 =head1 SUBROUTINES
 
@@ -168,9 +169,9 @@ child, meaning
 
 =item *
 
-Side effects "don't happen" in the parent - the counter in L<Test::More> doesn't
-update, any other side effects made by writing to passed in references gets
-discarded, I<etc>.
+Side effects "don't happen" in the parent - writes to structures passed in as
+references get discarded, as do changes to global state. This is both for your
+code B<and any code it calls>.
 
 =item *
 
@@ -195,11 +196,22 @@ C<control-Z> and similar work somewhat as expected when tests are run
 interactively, but this also is "best effort" and more intended as "fail less
 ungracefully" than "rely on this and report bugs if it fails".
 
+It means that you're using L<Test::More> and run tests (C<is>, C<like>, I<etc>)
+in your subroutine, the test counter doesn't update "outside" in the parent,
+and your test script will fail. The simple solution to this - update to
+
+    use Test2::Bundle::More;
+    use Test2::IPC;
+
+and be happy. These modules have shipped with core since v5.26.0 and most CPAN
+distributions already indirectly depend on them, so likely you already have it
+installed and available even if you have to target unsupported Perl versions.
+
 =head1 RATIONALE
 
 At work our use case is testing our database code. Its configuration has
-connection parameters (database, username, password, etc). We'd like to be able
-to run the same code
+connection parameters (database, username, password, I<etc>). We'd like to be
+able to run the same code
 
 =over 4
 
