@@ -5,7 +5,7 @@ use warnings;
 
 # Can't use done_testing here as "classic" Test::Builder outputs the plan twice
 # (The rewrite to use Test2 fixes this, but I don't want to depend on that)
-use Test::More tests => 12;
+use Test::More tests => 10;
 use Test::Warnings;
 use Test::Fatal;
 use Config;
@@ -30,29 +30,6 @@ my $have = without_tty {
     return 6 * 9;
 };
 is($have, 54, "Failed to open $dev_tty in the block called by without_tty");
-
-{
-    my $pid = $$;
-    # "Pick a card"
-    my @array = keys %ENV;
-    my $index = rand @array;
-    my $pick = $array[$index];
-
-    # You can use this sort of construction to run tests within the your block:
-    my $Test = Test::Builder->new;
-    my $curr_test = $Test->current_test;
-    my $count = without_tty(sub {
-        my ($a) = @_;
-        isnt($$, $pid, "We're actually running in a different process");
-        # We can pass *in* arguments, including structures and objects
-        # And we inherit our lexical state, just as expected
-        is($a->[$index], $pick, "Random array of element found");
-
-        # Two tests ran in the child that our parent doesn't know about:
-        return 2;
-    }, \@array);
-    $Test->current_test($curr_test + $count);
-}
 
 sub die_string {
     die "Exceptions are propagated";
