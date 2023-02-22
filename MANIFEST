@@ -4,4 +4,5 @@ MANIFEST
 Makefile.PL
 README
 lib/Test/NoTty.pm
+t/force-a-tty.pl
 t/task-failed-successfully.t
