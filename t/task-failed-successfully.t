@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More qw(no_plan);
+# Can't use done_testing here as "classic" Test::Builder outputs the plan twice
+# (The rewrite to use Test2 fixes this, but I don't want to depend on that)
+use Test::More tests => 12;
 use Test::Warnings;
 use Test::Fatal;
 use Config;
@@ -158,5 +160,3 @@ if ($pty) {
     };
     my $got = $pty->close;
 }
-
-done_testing;
