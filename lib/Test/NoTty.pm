@@ -49,7 +49,7 @@ sub without_tty(&@) {
 
         eval {
             die "setsid failed: $!"
-                unless setsid;
+                if setsid == -1;
 
             # Likewise, a limitation is that the only function return value we
             # can easily support is an integer process exit code:
