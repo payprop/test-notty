@@ -7,7 +7,8 @@ use warnings;
 die "OS unsupported"
     unless -e '/dev/tty';
 
-use ExtUtils::MakeMaker;
+# Need this for TEST_REQUIRES
+use ExtUtils::MakeMaker 6.64;
 
 WriteMakefile(
     NAME             => 'Test::NoTty',
