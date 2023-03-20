@@ -9,7 +9,7 @@ use parent qw(Exporter);
 use POSIX qw(setsid _exit WIFEXITED WEXITSTATUS WIFSIGNALED WTERMSIG);
 
 our @EXPORT = 'without_tty';
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub without_tty(&@) {
     my ($code, @args) = @_;
